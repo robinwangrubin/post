@@ -1,0 +1,14 @@
+# Site settings
+title: Robin's Personal Website
+email: robinwangrubin@gmail.com
+github_username: robinwangrubin
+
+# Build settings
+markdown: kramdown
+permalink: none
+
+# highlight
+# highlighter: pygments
+# highlighter: rouge
+# highlighter: false
+
