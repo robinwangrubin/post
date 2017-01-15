@@ -1,0 +1,735 @@
+---
+title: Docker Swarm基础
+categories: Docker
+---
+<!DOCTYPE html>
+<html>
+
+  <head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Docker Swarm基础</title>
+	<meta name="description" content="">
+	<link rel="canonical" href="/docker/Docker-Swarm-Basic.html">
+	<link rel="alternate" type="application/rss+xml" title="Robin's Personal Website" href="/feed.xml" />
+        <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/index.css">
+	<script type="text/javascript" src="/static/js/jquery-1.11.1.min.js"></script>
+	<script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="/static/css/monokai_sublime.min.css">
+	<script type="text/javascript" src="/static/js/highlight.min.js"></script>
+	<script type="text/javascript" src="/static/js/index.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+</head>
+
+
+ <!--  <body data-spy="scroll" data-target="#myAffix"> -->
+  <body>
+
+    <header>
+
+<!-- navbar -->
+  <nav class="navbar navbar-inverse">
+  <div class="container">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">Robin's Personal Website</a>
+      <p class="navbar-text"></p>
+    </div>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav navbar-right">
+
+        
+          <li>
+        
+        <a href="/">Home</a></li>
+
+        
+          
+            
+              <li>
+            
+            <a href="/project/"><span class="glyphicon "></span> Project</a></li>
+          
+        
+          
+            
+              <li>
+            
+            <a href="/about/"><span class="glyphicon "></span> About</a></li>
+          
+        
+          
+        
+          
+        
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+</header>
+
+    <div id="main" class="container main">
+      <div class="row">
+  <div id="myArticle" class="col-sm-9">
+    <div class="post-area post">
+      <header>
+        <h1>Docker Swarm基础</h1>
+        <p>Jan 1 2017</p>
+      </header>
+      <hr>
+      <article>
+        <ul id="markdown-toc">
+  <li><a href="#reference" id="markdown-toc-reference">Reference</a></li>
+  <li><a href="#swarm-mode-overview" id="markdown-toc-swarm-mode-overview">Swarm mode overview</a>    <ul>
+      <li><a href="#feature-highlights" id="markdown-toc-feature-highlights">Feature highlights</a></li>
+    </ul>
+  </li>
+  <li><a href="#swarm-mode-key-concepts" id="markdown-toc-swarm-mode-key-concepts">Swarm mode key concepts</a>    <ul>
+      <li><a href="#swarm" id="markdown-toc-swarm">Swarm</a></li>
+      <li><a href="#node" id="markdown-toc-node">Node</a></li>
+      <li><a href="#services-and-tasks" id="markdown-toc-services-and-tasks">Services and tasks</a></li>
+      <li><a href="#load-balancing" id="markdown-toc-load-balancing">Load balancing</a></li>
+    </ul>
+  </li>
+  <li><a href="#getting-started-with-swarm-mode" id="markdown-toc-getting-started-with-swarm-mode">Getting started with swarm mode</a>    <ul>
+      <li><a href="#environment" id="markdown-toc-environment">environment</a></li>
+    </ul>
+  </li>
+  <li><a href="#create-a-swarm" id="markdown-toc-create-a-swarm">Create a swarm</a></li>
+  <li><a href="#join-nodes-to-a-swarm" id="markdown-toc-join-nodes-to-a-swarm">Join nodes to a swarm</a>    <ul>
+      <li><a href="#join-as-a-worker-node" id="markdown-toc-join-as-a-worker-node">Join as a worker node</a></li>
+      <li><a href="#join-as-a-manager-node" id="markdown-toc-join-as-a-manager-node">Join as a manager node</a></li>
+    </ul>
+  </li>
+  <li><a href="#manage-nodes-in-a-swarm" id="markdown-toc-manage-nodes-in-a-swarm">Manage nodes in a swarm</a>    <ul>
+      <li><a href="#list-nodes" id="markdown-toc-list-nodes">List nodes</a></li>
+      <li><a href="#inspect-an-individual-node" id="markdown-toc-inspect-an-individual-node">Inspect an individual node</a></li>
+      <li><a href="#change-node-availability" id="markdown-toc-change-node-availability">Change node availability</a></li>
+      <li><a href="#add-or-remove-label-metadata" id="markdown-toc-add-or-remove-label-metadata">Add or remove label metadata</a></li>
+      <li><a href="#promote-or-demote-a-node" id="markdown-toc-promote-or-demote-a-node">Promote or demote a node</a></li>
+      <li><a href="#leave-the-swarm" id="markdown-toc-leave-the-swarm">Leave the swarm</a></li>
+    </ul>
+  </li>
+  <li><a href="#deploy-a-service-to-the-swarm" id="markdown-toc-deploy-a-service-to-the-swarm">Deploy a service to the swarm</a></li>
+  <li><a href="#inspect-a-service-on-the-swarm" id="markdown-toc-inspect-a-service-on-the-swarm">Inspect a service on the swarm</a></li>
+  <li><a href="#scale-the-service-in-the-swarm" id="markdown-toc-scale-the-service-in-the-swarm">Scale the service in the swarm</a></li>
+  <li><a href="#delete-the-service-running-on-the-swarm" id="markdown-toc-delete-the-service-running-on-the-swarm">Delete the service running on the swarm</a></li>
+  <li><a href="#apply-rolling-updates-to-a-service" id="markdown-toc-apply-rolling-updates-to-a-service">Apply rolling updates to a service</a></li>
+  <li><a href="#drain-a-node-on-the-swarm" id="markdown-toc-drain-a-node-on-the-swarm">Drain a node on the swarm</a></li>
+  <li><a href="#use-swarm-mode-routing-mesh" id="markdown-toc-use-swarm-mode-routing-mesh">Use swarm mode routing mesh</a>    <ul>
+      <li><a href="#publish-a-port-for-a-service" id="markdown-toc-publish-a-port-for-a-service">Publish a port for a service</a></li>
+      <li><a href="#configure-an-external-load-balancer" id="markdown-toc-configure-an-external-load-balancer">Configure an external load balancer</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="reference">Reference</h2>
+
+<blockquote>
+  <p>https://docs.docker.com/engine/swarm/</p>
+</blockquote>
+
+<hr />
+
+<h2 id="swarm-mode-overview">Swarm mode overview</h2>
+
+<p>Docker 1.12 内置了集群管理工具swarm，可使用docker的CLI去创建swarm集群；管理swarm集群；部署应用服务。</p>
+
+<h3 id="feature-highlights">Feature highlights</h3>
+
+<blockquote>
+  <p>引擎内置集群管理工具：使用docker的CLI即可创建管理集群；部署应用；无需额外的编排软件管理集群。</p>
+</blockquote>
+
+<blockquote>
+  <p>分散式设计：不是在部署时处理节点角色之间的差异，而是在运行时进行专业化分工。 你可以使用Docker Engine部署两种类型的节点，manager和worker。 这意味着您可以从单个磁盘映像构建整个群集。</p>
+</blockquote>
+
+<blockquote>
+  <p>声明性服务模型：Docker Engine使用声明性方法来定义应用程序堆栈中各种服务的所需状态。 例如，你可以描述由具有消息队列服务和数据库后端的Web前端服务组成的应用程序。</p>
+</blockquote>
+
+<blockquote>
+  <p>Scaling：你可以声明每个服务运行的副本数量，当你想要扩容或收缩时，swarm管理器通过自动添加或删除任务来适应所需的目标状态。</p>
+</blockquote>
+
+<blockquote>
+  <p>期望状态协调：manager节点实时监视群集状态，并协调你声明的期望状态的实际状态之间的任何差异。 例如，如果你设置一个服务运行10个副本，如果其中两个副本所在计算机崩溃，manager则自动在可用的worker节点创建两个新的任务，以达到你希望的目标状态（10个副本）。</p>
+</blockquote>
+
+<blockquote>
+  <p>多主机网络：你可以为你的服务创建overlay网络，manager自动分配地址给容器在初始化或更新应用容器的时候。</p>
+</blockquote>
+
+<blockquote>
+  <p>服务发现：manager自动为每个服务分配一个唯一的DNS名称，并对运行的容器负载均衡，你可以通过嵌入在swarm中的DNS服务器查询每个容器的域名信息。</p>
+</blockquote>
+
+<blockquote>
+  <p>负载均衡：你可以暴露一个服务端口给外部的负载均衡器，在swarm内部。你可以指定如何在节点之间分发任务。</p>
+</blockquote>
+
+<blockquote>
+  <p>安全：swarm节点之间之间采用TLS认证通信，你可以选择使用自签名或CA颁发的证书</p>
+</blockquote>
+
+<blockquote>
+  <p>滚动更新：你可以滚动更新你的应用，手动控制更新时的延时时间，如果出现问题，你可以回滚应用到之前的版本。</p>
+</blockquote>
+
+<hr />
+
+<h2 id="swarm-mode-key-concepts">Swarm mode key concepts</h2>
+
+<h3 id="swarm">Swarm</h3>
+
+<p>When you run Docker Engine outside of swarm mode, you execute container commands. When you run the Engine in swarm mode, you orchestrate services.</p>
+
+<h3 id="node">Node</h3>
+
+<p>一个node就是一个docker实例；</p>
+
+<p>当你部署服务时，你在manager node定义服务（一个服务可能由多个task共同组成），manager节点将tasks调度到worker节点执行。</p>
+
+<p>manager节点还负责维护集群管理功能使集群达到期望状态，manager节点中间会挑选一个leader出来负责编排任务。</p>
+
+<p>woker节点负责接收并执行manager分配的任务，默认情况下，manager节点也是worker节点，但是你可以设置让manager节点仅仅作为manager</p>
+
+<h3 id="services-and-tasks">Services and tasks</h3>
+
+<p>service就是被定义在worker上执行的task；</p>
+
+<p>当你创建service时，你指定所需的image和需在容器中执行的command</p>
+
+<p>在replicated services 模式，manager会根据你设置的副本数量自动分配task</p>
+
+<p>task就是一个容器，也是swarm调度的原子单位，manager节点根据你设置的副本数量分配任务到worker节点。当一个任务分配到node上，他就只能是runing或fail的状态。</p>
+
+<h3 id="load-balancing">Load balancing</h3>
+
+<p>manager使用ingress load balancing对外暴露服务，manager会自动分配PublishedPort 或者你也可以手动指定未被使用的端口号，如果是你不手动指定，swarm会自动在30000-32767中间分配一个端口号</p>
+
+<p>你可以访问任意节点的PublishedPort，即使该节点上并没有任务相应的task在运行</p>
+
+<p>Swarm有一个内部的DNS组件会自动为每个任务分配一条DNS记录，manager根据DNS域名负载该服务的所有请求。</p>
+
+<hr />
+
+<h2 id="getting-started-with-swarm-mode">Getting started with swarm mode</h2>
+
+<h3 id="environment">environment</h3>
+
+<p>host：</p>
+
+<ul>
+  <li>node0 manager1 192.168.1.130</li>
+  <li>node1	manager2 192.168.1.131</li>
+  <li>node2	manager3 192.168.1.132</li>
+  <li>node4	worker1	 192.168.1.133</li>
+  <li>node5	worker2	 192.168.1.134</li>
+</ul>
+
+<p>docker-version：</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">Client:
+ Version:      1.12.3
+ API version:  1.24
+ Go version:   go1.6.3
+ Git commit:   6b644ec
+ Built:        
+ OS/Arch:      linux/amd64
+
+Server:
+ Version:      1.12.3
+ API version:  1.24
+ Go version:   go1.6.3
+ Git commit:   6b644ec
+ Built:        
+ OS/Arch:      linux/amd64</code></pre></figure>
+
+<p>port：</p>
+
+<ul>
+  <li>TCP port 2377 for cluster management communications</li>
+  <li>TCP and UDP port 7946 for communication among nodes</li>
+  <li>TCP and UDP port 4789 for overlay network traffic</li>
+</ul>
+
+<hr />
+
+<h2 id="create-a-swarm">Create a swarm</h2>
+
+<blockquote>
+  <p>docker swarm init –advertise-addr <MANAGER-IP></MANAGER-IP></p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell"><span class="o">[</span>root@node0 ~]# docker swarm init --advertise-addr 192.168.1.130
+Swarm initialized: current node <span class="o">(</span>36duyub88vg54x41e0dur9850<span class="o">)</span> is now a manager.
+
+To add a worker to this swarm, run the following <span class="nb">command</span>:
+
+    docker swarm join <span class="se">\</span>
+    --token SWMTKN-1-1n11n79rldx65uq8krc7h41irve0j4x6lmrlea33u2wriw8vym-8wfukcb9amac6wkcgm340aj6f <span class="se">\</span>
+    192.168.1.130:2377
+
+To add a manager to this swarm, run <span class="s1">'docker swarm join-token manager'</span> and follow the instructions.</code></pre></figure>
+
+<blockquote>
+  <p>docker info</p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">Containers: 0
+ Running: 0
+ Paused: 0
+ Stopped: 0
+Images: 35
+Server Version: 1.12.3
+...snip...
+Swarm: active
+ NodeID: 36duyub88vg54x41e0dur9850
+ Is Manager: <span class="nb">true
+ </span>ClusterID: 4uxe2ejgkqky5x77g57p4cp3s
+ Managers: 1
+ Nodes: 1
+ ...snip...</code></pre></figure>
+
+<blockquote>
+  <p>docker node ls</p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell"><span class="o">[</span>root@node0 ~]# docker node ls
+ID                           HOSTNAME  STATUS  AVAILABILITY  MANAGER STATUS
+36duyub88vg54x41e0dur9850 <span class="k">*</span>  node0     Ready   Active        Leader</code></pre></figure>
+
+<p>* 表示你当前连接的主机；swarm自动用主机名命名node</p>
+
+<hr />
+
+<h2 id="join-nodes-to-a-swarm">Join nodes to a swarm</h2>
+
+<p>docker加入到集群是依赖<code class="highlighter-rouge">join-token</code>的，node使用不同的token可以以不同的身份加入到集群中；如果你后来变更了token，也不影响已经加入到集群的node。</p>
+
+<h3 id="join-as-a-worker-node">Join as a worker node</h3>
+
+<blockquote>
+  <p>docker swarm join-token worker</p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell"><span class="o">[</span>root@node0 ~]# docker swarm join-token worker
+To add a worker to this swarm, run the following <span class="nb">command</span>:
+
+    docker swarm join <span class="se">\</span>
+    --token SWMTKN-1-1n11n79rldx65uq8krc7h41irve0j4x6lmrlea33u2wriw8vym-8wfukcb9amac6wkcgm340aj6f <span class="se">\</span>
+    192.168.1.130:2377</code></pre></figure>
+
+<h3 id="join-as-a-manager-node">Join as a manager node</h3>
+
+<blockquote>
+  <p>docker swarm join-token manager</p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell"><span class="o">[</span>root@node0 ~]# docker swarm join-token manager
+To add a manager to this swarm, run the following <span class="nb">command</span>:
+
+    docker swarm join <span class="se">\</span>
+    --token SWMTKN-1-1n11n79rldx65uq8krc7h41irve0j4x6lmrlea33u2wriw8vym-bdik5uby0lq4s955ij8gnrtkb <span class="se">\</span>
+    192.168.1.130:2377</code></pre></figure>
+
+<hr />
+
+<ul>
+  <li>switches the Docker Engine on the current node into swarm mode.</li>
+  <li>requests a TLS certificate from the manager.</li>
+  <li>names the node with the machine hostname</li>
+  <li>joins the current node to the swarm at the manager listen address based upon the swarm token.</li>
+  <li>sets the current node to Active availability, meaning it can receive tasks from the scheduler.</li>
+  <li>extends the ingress overlay network to the current node.</li>
+</ul>
+
+<hr />
+
+<h2 id="manage-nodes-in-a-swarm">Manage nodes in a swarm</h2>
+
+<h3 id="list-nodes">List nodes</h3>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell"><span class="o">[</span>root@node0 ~]# docker node ls
+ID                           HOSTNAME  STATUS  AVAILABILITY  MANAGER STATUS
+36duyub88vg54x41e0dur9850 <span class="k">*</span>  node0     Ready   Active        Leader
+4bgh5mz90cc2cni8vn7ur9gb4    node2     Ready   Active        
+9sh9731bp74enjx9nht6irbon    node3     Ready   Active        
+czavy0nt0bro4fj1tl15fby62    node4     Ready   Active        
+dazpqp2i92e6ityg064r75ahq    node1     Ready   Active    </code></pre></figure>
+
+<p>AVAILABILITY:</p>
+
+<ul>
+  <li>Active 可以分配任务到该节点</li>
+  <li>Pause  不会分配新的任务到该节点，已有的任务继续运行</li>
+  <li>Drain  不会分配新的任务到该节点，已有的任务调度到其他node上运行</li>
+</ul>
+
+<p>MANAGER STATUS：</p>
+
+<ul>
+  <li>没有值表示是worker节点，不参与选举。</li>
+  <li>Leader 表示是主管理节点</li>
+  <li>Reachable 表示是管理节点，当Leader挂掉后会参与选举。</li>
+  <li>Unavailable 表示该node是管理节点，但是与其他的manager失去了联系。这时候应该将其降权，并提升一名worker作为新manager</li>
+</ul>
+
+<h3 id="inspect-an-individual-node">Inspect an individual node</h3>
+
+<blockquote>
+  <p>docker node inspect <NODE-ID> --pretty</NODE-ID></p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker node inspect node0 --pretty
+ID:                     36duyub88vg54x41e0dur9850
+Hostname:               node0
+Joined at:              2017-01-01 07:18:11.827960041 +0000 utc
+Status:
+ State:                 Ready
+ Availability:          Active
+Manager Status:
+ Address:               192.168.1.130:2377
+ Raft Status:           Reachable
+ Leader:                Yes
+Platform:
+ Operating System:      linux
+ Architecture:          x86_64
+Resources:
+ CPUs:                  1
+ Memory:                977.9 MiB
+Plugins:
+  Network:              bridge, host, null, overlay
+  Volume:               <span class="nb">local
+</span>Engine Version:         1.12.3</code></pre></figure>
+
+<h3 id="change-node-availability">Change node availability</h3>
+
+<blockquote>
+  <p>docker node update</p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker node update --availability drain node0
+node0</code></pre></figure>
+
+<h3 id="add-or-remove-label-metadata">Add or remove label metadata</h3>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker node update --label-add foo --label-add <span class="nv">server</span><span class="o">=</span>java node0
+node0</code></pre></figure>
+
+<h3 id="promote-or-demote-a-node">Promote or demote a node</h3>
+
+<blockquote>
+  <p>docker node promote</p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell"><span class="c"># docker node promote node1 node2</span>
+Node node1 promoted to a manager <span class="k">in </span>the swarm.
+Node node2 promoted to a manager <span class="k">in </span>the swarm.
+<span class="c"># docker node ls</span>
+ID                           HOSTNAME  STATUS  AVAILABILITY  MANAGER STATUS
+36duyub88vg54x41e0dur9850 <span class="k">*</span>  node0     Ready   Drain         Leader
+4bgh5mz90cc2cni8vn7ur9gb4    node2     Ready   Active        Reachable
+9sh9731bp74enjx9nht6irbon    node3     Ready   Active        
+czavy0nt0bro4fj1tl15fby62    node4     Ready   Active        
+dazpqp2i92e6ityg064r75ahq    node1     Ready   Active        Reachable</code></pre></figure>
+
+<blockquote>
+  <p>docker node demote</p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell"><span class="c"># docker node demote node1 node2</span>
+Manager node1 demoted <span class="k">in </span>the swarm.
+Manager node2 demoted <span class="k">in </span>the swarm.
+<span class="c"># docker node ls</span>
+ID                           HOSTNAME  STATUS  AVAILABILITY  MANAGER STATUS
+36duyub88vg54x41e0dur9850 <span class="k">*</span>  node0     Ready   Drain         Leader
+4bgh5mz90cc2cni8vn7ur9gb4    node2     Ready   Active        
+9sh9731bp74enjx9nht6irbon    node3     Ready   Active        
+czavy0nt0bro4fj1tl15fby62    node4     Ready   Active        
+dazpqp2i92e6ityg064r75ahq    node1     Ready   Active  </code></pre></figure>
+
+<h3 id="leave-the-swarm">Leave the swarm</h3>
+
+<blockquote>
+  <p>docker swarm leave</p>
+</blockquote>
+
+<p>worker离开集群</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker swarm leave
+Node left the swarm.</code></pre></figure>
+
+<p>manager离开集群</p>
+
+<p>先降权成为worker，在以worker身份离开集群</p>
+
+<p>当node离开了集群之后，可以删除node节点</p>
+
+<blockquote>
+  <p>docker node rm</p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker node rm node1</code></pre></figure>
+
+<hr />
+
+<h2 id="deploy-a-service-to-the-swarm">Deploy a service to the swarm</h2>
+
+<blockquote>
+  <p>docker service create</p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service create --replicas 1 --name helloworld alpine ping docker.com</code></pre></figure>
+
+<blockquote>
+  <p>docker service ls</p>
+</blockquote>
+
+<hr />
+
+<h2 id="inspect-a-service-on-the-swarm">Inspect a service on the swarm</h2>
+
+<blockquote>
+  <p>docker service inspect –pretty <SERVICE-ID></SERVICE-ID></p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service inspect --pretty helloworld</code></pre></figure>
+
+<blockquote>
+  <p>docker service ps <SERVICE-ID></SERVICE-ID></p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service ps helloworld</code></pre></figure>
+
+<hr />
+
+<h2 id="scale-the-service-in-the-swarm">Scale the service in the swarm</h2>
+
+<blockquote>
+  <p>docker service scale <SERVICE-ID>=<NUMBER-OF-TASKS></NUMBER-OF-TASKS></SERVICE-ID></p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service scale <span class="nv">helloworld</span><span class="o">=</span>5</code></pre></figure>
+
+<blockquote>
+  <p>docker service ps <SERVICE-ID></SERVICE-ID></p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service ps helloworld</code></pre></figure>
+
+<hr />
+
+<h2 id="delete-the-service-running-on-the-swarm">Delete the service running on the swarm</h2>
+
+<blockquote>
+  <p>docker service rm h<SERVICE-ID></SERVICE-ID></p>
+</blockquote>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service rm helloworld</code></pre></figure>
+
+<hr />
+
+<h2 id="apply-rolling-updates-to-a-service">Apply rolling updates to a service</h2>
+
+<p>部署 Redis 3.0.6 并设置update服务时的延时为10s</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service create <span class="se">\</span>
+  --replicas 3 <span class="se">\</span>
+  --name redis <span class="se">\</span>
+  --update-delay 10s <span class="se">\</span>
+  redis:3.0.6</code></pre></figure>
+
+<p><code class="highlighter-rouge">--update-delay</code> 标签用来配置update服务时的延时间隔；可选格式：3h 5m 10m30s 10s</p>
+
+<p>默认情况下一次升级所有服务，你可以使用<code class="highlighter-rouge">--update-parallelism</code>标签设置一次更新任务的数量</p>
+
+<p>默认情况下，更新任务中如果有失败的情况，会停止继续更新，当然，你可以通过<code class="highlighter-rouge">--update-failure-action</code>标签去控制更新失败后的行为</p>
+
+<p>Inspect the redis service:</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service inspect --pretty redis</code></pre></figure>
+
+<p>updates service：</p>
+
+<blockquote>
+  <p>docker service update –image redis:3.0.7 redis</p>
+</blockquote>
+
+<p>调度更新过程如下：</p>
+
+<p>停止第一个任务</p>
+
+<p>升级刚才停止的任务</p>
+
+<p>启动新的容器替换刚才停止任务</p>
+
+<p>如果更新状态是RUNNING，等待延时间隔，续集更新下一个任务</p>
+
+<p>如果跟新状态是FAILED，停止更新</p>
+
+<p>Run docker service inspect –pretty redis to see the new image in the desired state:</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service inspect --pretty redis</code></pre></figure>
+
+<p>To restart a paused update run docker service update <SERVICE-ID>. For example:</SERVICE-ID></p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service update redis</code></pre></figure>
+
+<p>Run docker service ps <SERVICE-ID> to watch the rolling update:</SERVICE-ID></p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service ps redis</code></pre></figure>
+
+<hr />
+
+<h2 id="drain-a-node-on-the-swarm">Drain a node on the swarm</h2>
+
+<p>默认情况下，swarm manager会向所有状态为<code class="highlighter-rouge">ACTIVE </code>的节点分配任务，包括manager自身。</p>
+
+<p>当你需要使某台设备下架维护时，你可以将这台设备设置为<code class="highlighter-rouge">DRAIN</code>状态，那么这台设备上的任务会被停止掉，自动在状态为 <code class="highlighter-rouge">ACTIVE </code>的节点上启动该任务。</p>
+
+<blockquote>
+  <p>docker node update –availability drain <NODE-ID></NODE-ID></p>
+</blockquote>
+
+<blockquote>
+  <p>docker node update –availability active <NODE-ID></NODE-ID></p>
+</blockquote>
+
+<hr />
+
+<h2 id="use-swarm-mode-routing-mesh">Use swarm mode routing mesh</h2>
+
+<p>swarm使对外暴露服务端口变得简单，所有的节点加入到了<code class="highlighter-rouge">ngress routing mesh</code>，routing mesh可以使每个节点都能接收外部的请求，即使某个节点上没有相关任务在运行，routing mesh也能正确的将请求路由到可用的节点。</p>
+
+<p>为了使用 ingress network 你需要占用以下端口:</p>
+
+<ul>
+  <li>Port 7946 TCP/UDP for container network discovery.</li>
+  <li>Port 4789 UDP for the container ingress network.</li>
+</ul>
+
+<h3 id="publish-a-port-for-a-service">Publish a port for a service</h3>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service create <span class="se">\</span>
+  --name &lt;SERVICE-NAME&gt; <span class="se">\</span>
+  --publish &lt;PUBLISHED-PORT&gt;:&lt;TARGET-PORT&gt; <span class="se">\</span>
+  &lt;IMAGE&gt;</code></pre></figure>
+
+<p><code class="highlighter-rouge">&lt;TARGET-PORT&gt;</code>表示容器监听的端口，<code class="highlighter-rouge">&lt;PUBLISHED-PORT&gt;</code> swarm服务监听的端口</p>
+
+<p>例如：想对外提供8080的访问</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service create <span class="se">\</span>
+  --name my-web <span class="se">\</span>
+  --publish 8080:80 <span class="se">\</span>
+  --replicas 2 <span class="se">\</span>
+  nginx</code></pre></figure>
+
+<p>当你访问集群任意节点的8080端口，swarm自动负载路由请求到可用节点上。</p>
+
+<p><img src="/pic/Docker-Swarm-Basic/ingress-routing-mesh.png" alt="01" /></p>
+
+<p>对于已经存在的服务，你可以使用update去更新对外端口</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service update <span class="se">\</span>
+  --publish-add &lt;PUBLISHED-PORT&gt;:&lt;TARGET-PORT&gt; <span class="se">\</span>
+  &lt;SERVICE&gt;</code></pre></figure>
+
+<p>查看服务对外暴露的端口</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service inspect --format<span class="o">=</span><span class="s2">""</span> my-web</code></pre></figure>
+
+<p>暴露TCP端口</p>
+
+<blockquote>
+  <p>docker service create –name dns-cache -p 53:53 dns-cache</p>
+</blockquote>
+
+<blockquote>
+  <p>docker service create –name dns-cache -p 53:53/tcp dns-cache</p>
+</blockquote>
+
+<p>暴露UDP端口</p>
+
+<blockquote>
+  <p>docker service create –name dns-cache -p 53:53/udp dns-cache</p>
+</blockquote>
+
+<p>暴露TCP/UDP端口</p>
+
+<blockquote>
+  <p>docker service create –name dns-cache -p 53:53/tcp -p 53:53/udp dns-cache</p>
+</blockquote>
+
+<h3 id="configure-an-external-load-balancer">Configure an external load balancer</h3>
+
+<p>你可以配置一个外部的负载均衡器去路由请求到swarm节点，例如 HAProxy负载请求到nginx服务的8080端口</p>
+
+<p><img src="/pic/Docker-Swarm-Basic/ingress-lb.png" alt="02" /></p>
+
+<hr />
+
+<p>end</p>
+
+
+      </article>
+      <hr>
+        <script>
+            window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    </div>
+	    
+  </div>
+  
+  <div id="content" class="col-sm-3">
+    <!-- <div id="myAffix" class="shadow-bottom-center hidden-xs" data-spy="affix" data-offset-top="0" data-offset-bottom="-20"> -->
+    <div id="myAffix" class="shadow-bottom-center hidden-xs" >
+      <div class="categories-list-header">
+        Content
+      </div>
+      <div class="content-text"></div>
+    </div>
+  </div>
+  
+</div>
+
+    </div>
+
+    
+    <div id="top" data-toggle="tooltip" data-placement="left" title="back to top">
+      <a href="javascript:;">
+        <div class="arrow"></div>
+        <div class="stick"></div>
+      </a>
+    </div>
+
+    <footer class="">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <a href="mailto:robin.wangrubin@gmail.com"><span class="glyphicon glyphicon-envelope"></span> robin.wangrubin@gmail.com</a>
+        <span>|</span>
+        <span>Copyright&copy; 2016 WangRuBin</span>
+        <span>|</span>
+        <span>Powered By Jekyll · Theme By Gaohaoyang</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  
+  </body>
+</html>

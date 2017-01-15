@@ -1,0 +1,375 @@
+---
+title: Docker 1.12 Swarm集群实战 第六章
+categories: Docker
+---
+<!DOCTYPE html>
+<html>
+
+  <head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Docker 1.12 Swarm集群实战 第六章</title>
+	<meta name="description" content="">
+	<link rel="canonical" href="/docker/Docker-Monitor.html">
+	<link rel="alternate" type="application/rss+xml" title="Robin's Personal Website" href="/feed.xml" />
+        <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/index.css">
+	<script type="text/javascript" src="/static/js/jquery-1.11.1.min.js"></script>
+	<script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="/static/css/monokai_sublime.min.css">
+	<script type="text/javascript" src="/static/js/highlight.min.js"></script>
+	<script type="text/javascript" src="/static/js/index.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+</head>
+
+
+ <!--  <body data-spy="scroll" data-target="#myAffix"> -->
+  <body>
+
+    <header>
+
+<!-- navbar -->
+  <nav class="navbar navbar-inverse">
+  <div class="container">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">Robin's Personal Website</a>
+      <p class="navbar-text"></p>
+    </div>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav navbar-right">
+
+        
+          <li>
+        
+        <a href="/">Home</a></li>
+
+        
+          
+            
+              <li>
+            
+            <a href="/project/"><span class="glyphicon "></span> Project</a></li>
+          
+        
+          
+            
+              <li>
+            
+            <a href="/about/"><span class="glyphicon "></span> About</a></li>
+          
+        
+          
+        
+          
+        
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+</header>
+
+    <div id="main" class="container main">
+      <div class="row">
+  <div id="myArticle" class="col-sm-9">
+    <div class="post-area post">
+      <header>
+        <h1>Docker 1.12 Swarm集群实战 第六章</h1>
+        <p>Dec 24 2016</p>
+      </header>
+      <hr>
+      <article>
+        <ul id="markdown-toc">
+  <li><a href="#section" id="markdown-toc-section">前言</a></li>
+  <li><a href="#influxdb" id="markdown-toc-influxdb">InfluxDB</a></li>
+  <li><a href="#cadvisor" id="markdown-toc-cadvisor">cAdvisor</a>    <ul>
+      <li><a href="#cadvisor-1" id="markdown-toc-cadvisor-1">验证cadvisor</a></li>
+    </ul>
+  </li>
+  <li><a href="#grafana" id="markdown-toc-grafana">Grafana</a>    <ul>
+      <li><a href="#section-1" id="markdown-toc-section-1">添加数据源</a></li>
+      <li><a href="#section-2" id="markdown-toc-section-2">新建性能绘图</a></li>
+    </ul>
+  </li>
+  <li><a href="#end" id="markdown-toc-end">end</a></li>
+</ul>
+
+<h2 id="section">前言</h2>
+
+<p>这一章我们来介绍如何使用cAdvisor+InfluxDB+Grafana搭建一个简单的swarm性能监控平台；</p>
+
+<ul>
+  <li>cAdvisor：用来收集docker容器内部和host主机上的性能数据；</li>
+  <li>InfuxDB：开源分布式时序数据库, 用来保存cAvisor收集的性能数据；</li>
+  <li>Grafana：性能绘图仪表盘工具, 读取Influxdb性能数据,绘图展示；</li>
+</ul>
+
+<h2 id="influxdb">InfluxDB</h2>
+
+<p>启动一个lnfuxDB容器，用于收集docker性能数据</p>
+
+<p>发布两个端口：8086用于lnfluxdb数据读写；8083用于数据库管理；</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service create --network logging -p 8083:8083 -p 8086:8086 --mount <span class="nb">source</span><span class="o">=</span>influxdb-vol,type<span class="o">=</span>volume,target<span class="o">=</span>/var/lib/influxdb --name<span class="o">=</span>influxdb --constraint <span class="s1">'node.hostname==node3'</span> influxdb:alpine</code></pre></figure>
+
+<p>这里使用logging网络, 如果你的swarm集群里面没有创建这个网络,使用命令创建：</p>
+
+<blockquote>
+  <p>docker network create –driver overlay logging</p>
+</blockquote>
+
+<p>influxdb启动成功后，访问集群任意节点ip的8083端口即可访问管理界面；</p>
+
+<p>点击右上角的“连接设置”，输入用户名root，输入密码root，save保存</p>
+
+<p><img src="/pic/docker-monitor/1.png" alt="01" /></p>
+
+<p>下面我们创建一个数据库cadvisor, 用于保存swarm集群性能数据</p>
+
+<p>在Query框中输入, CREATE DATABASE “cadvisor”按回车执行</p>
+
+<p><img src="/pic/docker-monitor/b368eca9-1c0e-45d6-9532-dd28e69f7231.png" alt="02" /></p>
+
+<p>SHOW DATABASES将会看到我们新建的数据库</p>
+
+<p><img src="/pic/docker-monitor/141584c6-d026-485d-9e65-8adfdc4f0bbb.png" alt="03" /></p>
+
+<hr />
+
+<h2 id="cadvisor">cAdvisor</h2>
+
+<p>Google开源的容器监控工具；在Goolge开源社区关注度排名第一的工具；</p>
+
+<p>需在所有swarm节点运行cAdvisor服务</p>
+
+<p>1.任意一台节点下载cadvisior镜像</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker pull google/cadvisor</code></pre></figure>
+
+<p>2.retag完上传至本地仓库便于其他节点快速下载</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker push localhost:5000/cadvisor</code></pre></figure>
+
+<p>3.使用global模式在所有节点上部署cAdvisor</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service create --network logging --name cadvisor --mode global <span class="se">\</span>
+--mount <span class="nb">source</span><span class="o">=</span>/var/run,type<span class="o">=</span><span class="nb">bind</span>,target<span class="o">=</span>/var/run,readonly<span class="o">=</span><span class="nb">false</span> <span class="se">\</span>
+--mount <span class="nb">source</span><span class="o">=</span>/,type<span class="o">=</span><span class="nb">bind</span>,target<span class="o">=</span>/rootfs,readonly<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+--mount <span class="nb">source</span><span class="o">=</span>/sys,type<span class="o">=</span><span class="nb">bind</span>,target<span class="o">=</span>/sys,readonly<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+--mount <span class="nb">source</span><span class="o">=</span>/var/lib/docker,type<span class="o">=</span><span class="nb">bind</span>,target<span class="o">=</span>/var/lib/docker,readonly<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+localhost:5000/cadvisor -storage_driver<span class="o">=</span>influxdb -storage_driver_host<span class="o">=</span>influxdb:8086 <span class="se">\</span>
+-storage_driver_db<span class="o">=</span>cadvisor</code></pre></figure>
+
+<blockquote>
+  <p>–mode global 指定service运行在每个swarm节点上</p>
+</blockquote>
+
+<blockquote>
+  <p>–mount 挂载本地docker socket用于监控docker性能</p>
+</blockquote>
+
+<blockquote>
+  <p>-storage_driver=influxdb 指定存储驱动,使cadvisor将数据存储到数据库中</p>
+</blockquote>
+
+<blockquote>
+  <p>-storage_driver_host=influxdb:8086 InfluxDB地址</p>
+</blockquote>
+
+<blockquote>
+  <p>-storage_driver_db=cadvisor 数据库名称</p>
+</blockquote>
+
+<p>4.验证启动情况</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service ps cadvisor
+ID                         NAME          IMAGE                    NODE   DESIRED STATE  CURRENT STATE          ERROR
+cnenwrggfqu2dqaiwu9z132l0  cadvisor      localhost:5000/cadvisor  node2  Running        Running 3 minutes ago  
+1eiyhx4xgz0dvsle9dlufpeyw   <span class="se">\_</span> cadvisor  localhost:5000/cadvisor  node1  Running        Running 3 minutes ago  
+1xo08qgm9rwn0hjwsfxr9w7tp   <span class="se">\_</span> cadvisor  localhost:5000/cadvisor  node0  Running        Running 3 minutes ago  
+ai2bmutq4g2nzinouhvkpvuug   <span class="se">\_</span> cadvisor  localhost:5000/cadvisor  node3  Running        Running 3 minutes ago  
+avxzu8ab7mtyig4dbo18oxdss   <span class="se">\_</span> cadvisor  localhost:5000/cadvisor  node4  Running        Running 3 minutes ago  </code></pre></figure>
+
+<h3 id="cadvisor-1">验证cadvisor</h3>
+
+<p>打开InfluxDB的管理界面, 查询cadvisor数据库数据, 验证性能数据收集情况.</p>
+
+<p>点击右上角切换数据库至cadvisor, 输入查询SHOW MEASUREMENTS.</p>
+
+<p><img src="/pic/docker-monitor/826491f7-de37-4f69-969a-ea5fd5f4d026.png" alt="04" /></p>
+
+<p>如果想查看具体的数据值可以使用select * from <mesurements name="">查询</mesurements></p>
+
+<p>例如：例如我们查询下 memory_usage. 可以直接输入select * from memory_usage</p>
+
+<hr />
+
+<h2 id="grafana">Grafana</h2>
+
+<p>创建Grafana服务</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker service create --network logging <span class="se">\</span>
+-p 3000:3000 -e <span class="s2">"GF_SECURITY_ADMIN_PASSWORD=admin"</span> <span class="se">\</span>
+--constraint <span class="s1">'node.hostname==node1'</span> <span class="se">\</span>
+--name grafana grafana/grafana</code></pre></figure>
+
+<p>打开浏览器访问swarm集群的3000端口,打开grafana webUI. 输入用户名密码登录</p>
+
+<p><img src="/pic/docker-monitor/85cceb0a-e6b5-40b8-9579-43ec774a5829.jpg" alt="05" /></p>
+
+<h3 id="section-1">添加数据源</h3>
+
+<p>点击左上角图标, 选择Data Sources, 然后点击Add data source, 点击Default</p>
+
+<p><img src="/pic/docker-monitor/9c53b468-ae1d-4fef-bf17-edb3ca04603c.png" alt="06" /></p>
+
+<p><img src="/pic/docker-monitor/24de34ef-5975-452f-adc4-8dfb0d8a53b7.png" alt="07" /></p>
+
+<h3 id="section-2">新建性能绘图</h3>
+
+<p>以node1为例, 我们新建一个dashboard名为node1.</p>
+
+<blockquote>
+  <p>Filesystem Limit/Usage</p>
+</blockquote>
+
+<p>点击Home, 点击Create New, 点击右侧绿色块选Add Panel, 选Graph</p>
+
+<p><img src="/pic/docker-monitor/62b772c9-fe6e-408c-b981-33be49063cf5.png" alt="07" /></p>
+
+<p>General面板 Title填Filesystem Limit/Usage, Span填6</p>
+
+<p>Metrics面板 Panel data source选Influxdb_source, 点击Add query,在上面的A, B查询框中分别输入查询:</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">SELECT mean<span class="o">(</span><span class="s2">"value"</span><span class="o">)</span> FROM <span class="s2">"fs_limit"</span> WHERE <span class="s2">"com.docker.swarm.node.id"</span> <span class="o">=</span> <span class="s1">'8ko8h0egr0vgydoww6poysg70'</span> AND <span class="nv">$timeFilter</span> GROUP BY <span class="nb">time</span><span class="o">(</span><span class="nv">$interval</span><span class="o">)</span> fill<span class="o">(</span>null<span class="o">)</span>
+SELECT mean<span class="o">(</span><span class="s2">"value"</span><span class="o">)</span> FROM <span class="s2">"fs_usage"</span> WHERE <span class="s2">"com.docker.swarm.node.id"</span> <span class="o">=</span> <span class="s1">'8ko8h0egr0vgydoww6poysg70'</span> AND <span class="nv">$timeFilter</span> GROUP BY <span class="nb">time</span><span class="o">(</span><span class="nv">$interval</span><span class="o">)</span> fill<span class="o">(</span>null<span class="o">)</span></code></pre></figure>
+
+<blockquote>
+  <p>8ko8h0egr0vgydoww6poysg70 是我的node1的ID，请根据实际情况修改（docker node ls 查看nodeID）</p>
+</blockquote>
+
+<p><img src="/pic/docker-monitor/69604c2b-bfcd-4204-a40a-79605c38403e.png" alt="08" /></p>
+
+<p>Axes面板, Left Y-&gt;Unit-&gt;data-&gt;bytes, Right Y-&gt;Unit-&gt;data-&gt;bytes 保存</p>
+
+<p><img src="/pic/docker-monitor/035f25b4-535c-4de6-ac3f-73aa4af20886.png" alt="09" /></p>
+
+<p>回到dashboard可以看到我们的监控绘图：</p>
+
+<p><img src="/pic/docker-monitor/7fd47ea5-c416-409f-a732-525b0e30a444.png" alt="10" /></p>
+
+<blockquote>
+  <p>CPU Usage</p>
+</blockquote>
+
+<p>点击左上角绿色隐藏模块；选Add Panel, 选Graph</p>
+
+<p>General面板 Title填CPU Usage, Span填6</p>
+
+<p>Metrics面板 Panel data source选Influxdb_source, 查询窗口输入如下语句:</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">SELECT mean<span class="o">(</span><span class="s2">"value"</span><span class="o">)</span> FROM <span class="s2">"cpu_usage_system"</span> WHERE <span class="s2">"container_name"</span> !<span class="o">=</span> <span class="s1">'/'</span> AND <span class="s2">"com.docker.swarm.node.id"</span> <span class="o">=</span> <span class="s1">'8ko8h0egr0vgydoww6poysg70'</span> AND <span class="nv">$timeFilter</span> GROUP BY <span class="nb">time</span><span class="o">(</span><span class="nv">$interval</span><span class="o">)</span>, <span class="s2">"container_name"</span> fill<span class="o">(</span>null<span class="o">)</span></code></pre></figure>
+
+<p>Axes面板, Left Y-&gt;Unit-&gt;time-&gt;Hertz(1/s), Right Y-&gt;Unit-&gt;time-&gt;Hertz(1/s) 保存</p>
+
+<blockquote>
+  <p>Memory Usage</p>
+</blockquote>
+
+<p>点击右侧Add rows, 点击左侧绿色块选Add Panel, 选Graph</p>
+
+<p>General面板 Title填Memory Usage, Span填6</p>
+
+<p>Metrics面板 Panel data source选Influxdb_source, 查询窗口输入如下语句</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">SELECT mean<span class="o">(</span><span class="s2">"value"</span><span class="o">)</span> FROM <span class="s2">"memory_usage"</span> WHERE <span class="s2">"com.docker.swarm.node.id"</span> <span class="o">=</span> <span class="s1">'8ko8h0egr0vgydoww6poysg70'</span> AND <span class="nv">$timeFilter</span> GROUP BY <span class="nb">time</span><span class="o">(</span><span class="nv">$interval</span><span class="o">)</span>, <span class="s2">"container_name"</span> fill<span class="o">(</span>null<span class="o">)</span></code></pre></figure>
+
+<p>Axes面板, Left Y-&gt;Unit-&gt;time-&gt;bytes, Right Y-&gt;Unit-&gt;time-&gt;bytes 保存</p>
+
+<blockquote>
+  <p>Network Transmit / Receive</p>
+</blockquote>
+
+<p>点击左侧绿色块选Add Panel, 选Graph</p>
+
+<p>General面板 Title填Network Transmit / Receive, Span填6</p>
+
+<p>Metrics面板 Panel data source选Influxdb_source, 点击Add query,在上面的A, B查询框中分别输入查询:</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">SELECT mean<span class="o">(</span><span class="s2">"value"</span><span class="o">)</span> FROM <span class="s2">"rx_bytes"</span> WHERE <span class="s2">"com.docker.swarm.node.id"</span> <span class="o">=</span> <span class="s1">'8ko8h0egr0vgydoww6poysg70'</span> AND <span class="nv">$timeFilter</span> GROUP BY <span class="nb">time</span><span class="o">(</span><span class="nv">$interval</span><span class="o">)</span> fill<span class="o">(</span>null<span class="o">)</span>
+SELECT mean<span class="o">(</span><span class="s2">"value"</span><span class="o">)</span> FROM <span class="s2">"tx_bytes"</span> WHERE <span class="s2">"com.docker.swarm.node.id"</span> <span class="o">=</span> <span class="s1">'8ko8h0egr0vgydoww6poysg70'</span> AND <span class="nv">$timeFilter</span> GROUP BY <span class="nb">time</span><span class="o">(</span><span class="nv">$interval</span><span class="o">)</span> fill<span class="o">(</span>null<span class="o">)</span></code></pre></figure>
+
+<p>Axes面板, Left Y-&gt;Unit-&gt;data rate-&gt;bytes/sec, Right Y-&gt;Unit-&gt;time-&gt;bytes/sec 保存</p>
+
+<p>最后完成我们就可以看到这个节点的性能数据了：</p>
+
+<p><img src="/pic/docker-monitor/5a308da1-7801-42f4-993e-f2dc1246a65e.png" alt="10" /></p>
+
+<blockquote>
+  <p>其他节点监控</p>
+</blockquote>
+
+<p>你可以点击左上齿轮图标选Save As保存, 复制一份node1的配置. 然后编辑每个图表的查询语句替换com.docker.swarm.node.id, 就可以了.</p>
+
+<h2 id="end">end</h2>
+
+<p>Grafana 的绘图功能很强大, 而且支持多重数据源, 本章只是简单介绍下几个图的绘制方法,可能并没有什么实际意义, 只是希望能给大家一个入门的了解.</p>
+
+
+      </article>
+      <hr>
+        <script>
+            window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    </div>
+	    
+  </div>
+  
+  <div id="content" class="col-sm-3">
+    <!-- <div id="myAffix" class="shadow-bottom-center hidden-xs" data-spy="affix" data-offset-top="0" data-offset-bottom="-20"> -->
+    <div id="myAffix" class="shadow-bottom-center hidden-xs" >
+      <div class="categories-list-header">
+        Content
+      </div>
+      <div class="content-text"></div>
+    </div>
+  </div>
+  
+</div>
+
+    </div>
+
+    
+    <div id="top" data-toggle="tooltip" data-placement="left" title="back to top">
+      <a href="javascript:;">
+        <div class="arrow"></div>
+        <div class="stick"></div>
+      </a>
+    </div>
+
+    <footer class="">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <a href="mailto:robin.wangrubin@gmail.com"><span class="glyphicon glyphicon-envelope"></span> robin.wangrubin@gmail.com</a>
+        <span>|</span>
+        <span>Copyright&copy; 2016 WangRuBin</span>
+        <span>|</span>
+        <span>Powered By Jekyll · Theme By Gaohaoyang</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  
+  </body>
+</html>

@@ -1,0 +1,1025 @@
+---
+title: Docker 基础知识点介绍
+categories: Docker
+---
+
+
+<!DOCTYPE html>
+<html>
+
+  <head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Docker 基础知识点介绍</title>
+	<meta name="description" content="">
+	<link rel="canonical" href="/docker/Docker-Basic.html">
+	<link rel="alternate" type="application/rss+xml" title="Robin's Personal Website" href="/feed.xml" />
+        <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/index.css">
+	<script type="text/javascript" src="/static/js/jquery-1.11.1.min.js"></script>
+	<script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="/static/css/monokai_sublime.min.css">
+	<script type="text/javascript" src="/static/js/highlight.min.js"></script>
+	<script type="text/javascript" src="/static/js/index.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+</head>
+
+
+ <!--  <body data-spy="scroll" data-target="#myAffix"> -->
+  <body>
+
+    <header>
+
+<!-- navbar -->
+  <nav class="navbar navbar-inverse">
+  <div class="container">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">Robin's Personal Website</a>
+      <p class="navbar-text"></p>
+    </div>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav navbar-right">
+
+        
+          <li>
+        
+        <a href="/">Home</a></li>
+
+        
+          
+            
+              <li>
+            
+            <a href="/project/"><span class="glyphicon "></span> Project</a></li>
+          
+        
+          
+            
+              <li>
+            
+            <a href="/about/"><span class="glyphicon "></span> About</a></li>
+          
+        
+          
+        
+          
+        
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+</header>
+
+    <div id="main" class="container main">
+      <div class="row">
+  <div id="myArticle" class="col-sm-9">
+    <div class="post-area post">
+      <header>
+        <h1>Docker 基础知识点介绍</h1>
+        <p>Dec 24 2016</p>
+      </header>
+      <hr>
+      <article>
+        <ul id="markdown-toc">
+  <li><a href="#install-docker-112" id="markdown-toc-install-docker-112">Install docker 1.12</a>    <ul>
+      <li><a href="#install-with-yum" id="markdown-toc-install-with-yum">Install with yum</a></li>
+      <li><a href="#install-docker-from-binaries" id="markdown-toc-install-docker-from-binaries">Install Docker from binaries</a></li>
+      <li><a href="#install-with-the-script" id="markdown-toc-install-with-the-script">Install with the script</a></li>
+    </ul>
+  </li>
+  <li><a href="#docker-command" id="markdown-toc-docker-command">Docker Command</a></li>
+  <li><a href="#docker4" id="markdown-toc-docker4">Docker的4种网络模式</a>    <ul>
+      <li><a href="#host" id="markdown-toc-host">host模式</a></li>
+      <li><a href="#container" id="markdown-toc-container">container模式</a></li>
+      <li><a href="#none" id="markdown-toc-none">none模式</a></li>
+      <li><a href="#bridge" id="markdown-toc-bridge">bridge模式（默认模式）</a></li>
+    </ul>
+  </li>
+  <li><a href="#docker" id="markdown-toc-docker">Docker存储</a>    <ul>
+      <li><a href="#section" id="markdown-toc-section">数据卷</a></li>
+      <li><a href="#section-1" id="markdown-toc-section-1">数据卷容器</a></li>
+    </ul>
+  </li>
+  <li><a href="#dockerfile" id="markdown-toc-dockerfile">Dockerfile</a></li>
+  <li><a href="#namespace" id="markdown-toc-namespace">Namespace资源隔离</a></li>
+  <li><a href="#control-groups-cgroups" id="markdown-toc-control-groups-cgroups">Control Groups (cgroups)</a></li>
+  <li><a href="#docker-registry" id="markdown-toc-docker-registry">Docker-Registry</a>    <ul>
+      <li><a href="#http-registry" id="markdown-toc-http-registry">HTTP-registry</a></li>
+      <li><a href="#https-registry" id="markdown-toc-https-registry">HTTPS-registry</a></li>
+    </ul>
+  </li>
+  <li><a href="#docker-compose" id="markdown-toc-docker-compose">Docker-compose</a>    <ul>
+      <li><a href="#install-docker-compose" id="markdown-toc-install-docker-compose">Install docker-compose</a></li>
+      <li><a href="#get-started-with-docker-compose" id="markdown-toc-get-started-with-docker-compose">Get started with Docker Compose</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="install-docker-112">Install docker 1.12</h2>
+
+<hr />
+
+<blockquote>
+  <p>Docker requires a 64-bit OS and version 3.10 or higher of the Linux kernel.</p>
+</blockquote>
+
+<p>To check your current kernel version, open a terminal and use uname -r to display your kernel version:</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">uname -r
+3.10.0-327.el7.x86_64</code></pre></figure>
+
+<h3 id="install-with-yum">Install with yum</h3>
+
+<p>Add the yum repo.</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">tee /etc/yum.repos.d/docker.repo <span class="sh">&lt;&lt;-'EOF'
+[dockerrepo]
+name=Docker Repository
+baseurl=https://yum.dockerproject.org/repo/main/centos/7/
+enabled=1
+gpgcheck=1
+gpgkey=https://yum.dockerproject.org/gpg
+</span><span class="err">EOF</span></code></pre></figure>
+
+<p>Install the Docker package.</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">yum install docker-engine</code></pre></figure>
+
+<p>Enable the service and start docker daemon.</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">systemctl <span class="nb">enable </span>docker.service
+systemctl start docker</code></pre></figure>
+
+<p>Verification</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker version</code></pre></figure>
+
+<h3 id="install-docker-from-binaries">Install Docker from binaries</h3>
+
+<p>Download the docker binaries</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">wget https://get.docker.com/builds/Linux/x86_64/docker-1.12.0.tgz</code></pre></figure>
+
+<p>Install and start docker daemon</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">tar xf docker-1.12.0.tgz
+mv docker/<span class="k">*</span> /usr/bin/
+dockerd &amp;</code></pre></figure>
+
+<p>Verification</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker version</code></pre></figure>
+
+<h3 id="install-with-the-script">Install with the script</h3>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">curl -fsSL https://get.docker.com/ | sh</code></pre></figure>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">systemctl <span class="nb">enable </span>docker.service</code></pre></figure>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">systemctl start docker</code></pre></figure>
+
+<hr />
+
+<h2 id="docker-command">Docker Command</h2>
+<ul>
+  <li>下载镜像</li>
+</ul>
+
+<blockquote>
+  <p>docker pull ubuntu:14.04</p>
+</blockquote>
+
+<ul>
+  <li>导出镜像</li>
+</ul>
+
+<blockquote>
+  <p>docker save centos &gt;/opt/centos.tar.gz</p>
+</blockquote>
+
+<ul>
+  <li>导入镜像</li>
+</ul>
+
+<blockquote>
+  <p>docker load &lt;/opt/centos.tar.gz</p>
+</blockquote>
+
+<ul>
+  <li>列出当前已下载的镜像</li>
+</ul>
+
+<blockquote>
+  <p>docker images</p>
+</blockquote>
+
+<ul>
+  <li>删除镜像</li>
+</ul>
+
+<blockquote>
+  <p>docker rmi image-ID</p>
+</blockquote>
+
+<p>ps:如果镜像被用来创建了容器，那么需先删除容器</p>
+
+<ul>
+  <li>在dockerhub上搜索镜像</li>
+</ul>
+
+<blockquote>
+  <p>docker search centos</p>
+</blockquote>
+
+<ul>
+  <li>启动一个容器</li>
+</ul>
+
+<blockquote>
+  <p>docker run -name myfirst_docker -it ubuntu:14.04 /bin/bash</p>
+</blockquote>
+
+<ul>
+  <li>后台启动容器</li>
+</ul>
+
+<blockquote>
+  <p>docker run -d centos:6.6 /bin/bash -c “whilr ture;do echo “hahah”;sleep 1;done”</p>
+</blockquote>
+
+<p>-d:后台启动</p>
+
+<p>-name：定义容器名称</p>
+
+<p>-i：打开容器的标准输入</p>
+
+<p>-t：分配一个伪终端并绑定到容器的标准输入上</p>
+
+<ul>
+  <li>容器退出时自动删除该容器</li>
+</ul>
+
+<blockquote>
+  <p>docker run –rm centos echo “hello world”</p>
+</blockquote>
+
+<ul>
+  <li>启动一个已停止的容器</li>
+</ul>
+
+<blockquote>
+  <p>docker start container-ID</p>
+</blockquote>
+
+<ul>
+  <li>查看启动的容器</li>
+</ul>
+
+<blockquote>
+  <p>docker ps</p>
+</blockquote>
+
+<ul>
+  <li>查看所有的容器</li>
+</ul>
+
+<blockquote>
+  <p>docker ps -a</p>
+</blockquote>
+
+<ul>
+  <li>获取容器内的log</li>
+</ul>
+
+<blockquote>
+  <p>docker logs container-ID</p>
+</blockquote>
+
+<ul>
+  <li>查看容器内部进程</li>
+</ul>
+
+<blockquote>
+  <p>docker top container-ID</p>
+</blockquote>
+
+<ul>
+  <li>停止容器</li>
+</ul>
+
+<blockquote>
+  <p>docker stop container-ID</p>
+</blockquote>
+
+<ul>
+  <li>极端方式停止容器（不推荐）</li>
+</ul>
+
+<blockquote>
+  <p>docker kill container-ID</p>
+</blockquote>
+
+<ul>
+  <li>获取所有启动的容器的ID号</li>
+</ul>
+
+<blockquote>
+  <p>docker ps -q</p>
+</blockquote>
+
+<ul>
+  <li>获取所有容器的ID号</li>
+</ul>
+
+<blockquote>
+  <p>docker ps -a -q</p>
+</blockquote>
+
+<ul>
+  <li>批量杀掉启动的容器</li>
+</ul>
+
+<blockquote>
+  <p>docker kill $(docker ps -q)</p>
+</blockquote>
+
+<ul>
+  <li>删除已停止的容器</li>
+</ul>
+
+<blockquote>
+  <p>docker rm container-ID</p>
+</blockquote>
+
+<ul>
+  <li>删除正在运行的容器</li>
+</ul>
+
+<blockquote>
+  <p>docker rm -f container-ID</p>
+</blockquote>
+
+<ul>
+  <li>删除所有容器和镜像</li>
+</ul>
+
+<blockquote>
+  <p>docker kill $(docker ps -q)</p>
+</blockquote>
+
+<blockquote>
+  <p>docker rm $(docker ps -a -q)</p>
+</blockquote>
+
+<blockquote>
+  <p>docker rmi $(docker images -q -a)</p>
+</blockquote>
+
+<ul>
+  <li>进入正在运行的容器中</li>
+</ul>
+
+<blockquote>
+  <p>docker attach container-ID</p>
+</blockquote>
+
+<p>Note：多个窗口同时attach到同一个容器中时，会同步显示某个窗口的一切信息，当这个窗口阻塞，其他窗口也无法操作</p>
+
+<ul>
+  <li>nsenter命令</li>
+</ul>
+
+<p>nsenter可以访问另一个进程的名字空间，需要root权限</p>
+
+<p>yum -y install util-linux</p>
+
+<p>docker inspect –format "\{\{.State.Pid\}\}" 867e6627a194</p>
+
+<p>找到容器的第一个进程的PID</p>
+
+<p>nsenter -t 20012 -u -i -n -p</p>
+
+<p>利用PID进入该容器</p>
+
+<ul>
+  <li>commit镜像</li>
+</ul>
+
+<blockquote>
+  <p>docker commit -m “my nginx” container-ID test/mynginx:v1   #自定义一个镜像</p>
+</blockquote>
+
+<hr />
+
+<h2 id="docker4">Docker的4种网络模式</h2>
+
+<h3 id="host">host模式</h3>
+
+<blockquote>
+  <p>众所周知，Docker使用了Linux的Namespaces技术来进行资源隔离，如PID Namespace隔离进程，Mount Namespace隔离文件系统，Network Namespace隔离网络等。一个Network Namespace提供了一份独立的网络环境，包括网卡、路由、Iptable规则等都与其他的Network Namespace隔离。一个Docker容器一般会分配一个独立的Network Namespace。但如果启动容器的时候使用host模式，那么这个容器将不会获得一个独立的Network Namespace，而是和宿主机共用一个Network Namespace。容器将不会虚拟出自己的网卡，配置自己的IP等，而是使用宿主机的IP和端口。
+例如，我们在10.10.101.105/24的机器上用host模式启动一个含有web应用的Docker容器，监听tcp80端口。当我们在容器中执行任何类似ifconfig命令查看网络环境时，看到的都是宿主机上的信息。而外界访问容器中的应用，则直接使用10.10.101.105:80即可，不用任何NAT转换，就如直接跑在宿主机中一样。但是，容器的其他方面，如文件系统、进程列表等还是和宿主机隔离的。</p>
+</blockquote>
+
+<h3 id="container">container模式</h3>
+
+<blockquote>
+  <p>在理解了host模式后，这个模式也就好理解了。这个模式指定新创建的容器和已经存在的一个容器共享一个Network Namespace，而不是和宿主机共享。新创建的容器不会创建自己的网卡，配置自己的IP，而是和一个指定的容器共享IP、端口范围等。同样，两个容器除了网络方面，其他的如文件系统、进程列表等还是隔离的。两个容器的进程可以通过lo网卡设备通信。</p>
+</blockquote>
+
+<h3 id="none">none模式</h3>
+
+<blockquote>
+  <p>这个模式和前两个不同。在这种模式下，Docker容器拥有自己的Network Namespace，但是，并不为Docker容器进行任何网络配置。也就是说，这个Docker容器没有网卡、IP、路由等信息。需要我们自己为Docker容器添加网卡、配置IP等。</p>
+</blockquote>
+
+<h3 id="bridge">bridge模式（默认模式）</h3>
+
+<blockquote>
+  <p>当Docker server启动时，会在主机上创建一个名为docker0的虚拟网桥，此主机上启动的Docker容器会连接到这个虚拟网桥上。虚拟网桥的工作方式和物理交换机类似，这样主机上的所有容器就通过交换机连在了一个二层网络中。接下来就要为容器分配IP了，Docker会从RFC1918所定义的私有IP网段中，选择一个和宿主机不同的IP地址和子网分配给docker0，连接到docker0的容器就从这个子网中选择一个未占用的IP使用。如一般Docker会使用172.17.0.0/16这个网段，并将172.17.42.1/16分配给docker0网桥（在主机上使用ifconfig命令是可以看到docker0的，可以认为它是网桥的管理接口，在宿主机上作为一块虚拟网卡使用）。单机环境下的网络拓扑如下，主机地址为10.10.101.105/24。</p>
+</blockquote>
+
+<ul>
+  <li>启动容器时指定端口</li>
+</ul>
+
+<blockquote>
+  <p>docker run -d -p 80:8080 nginx</p>
+</blockquote>
+
+<p>host的80映射到container的8080端口</p>
+
+<hr />
+
+<h2 id="docker">Docker存储</h2>
+
+<h3 id="section">数据卷</h3>
+
+<p>-v /data挂载data目录
+-v file 挂在一个文件
+-v src:dst 指定一个挂载目录，开发常用，挂载物理机代码所在目录，nginx直接使用代码创建一个centos容器，挂载/data目录，挂载时可以指定权限 ro rw 等</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker run -it --name volume-test1 -v /data centos     <span class="c">#给容器挂载一个/data目录</span>
+docker inspect 023072ed38db |grep -A 5 <span class="s2">"Mounts"</span>  <span class="c">#查看容器中/data目录对应真实的物理位置</span>
+docker run -it -v /tmp:/opt centos   <span class="c">#挂载物理机的tmp目录到容器的opt下</span></code></pre></figure>
+
+<h3 id="section-1">数据卷容器</h3>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker run -d --name myvolume centos
+docker run -it --name myvolum-test --volumes-from myvolume centos</code></pre></figure>
+
+<hr />
+
+<h2 id="dockerfile">Dockerfile</h2>
+
+<p>Dockerfile:镜像的描述文件；所有镜像都由Dockerfile生成；</p>
+
+<p>dockerfile 4大部分</p>
+
+<ul>
+  <li>基础镜像信息</li>
+  <li>维护者信息</li>
+  <li>镜像操作指令</li>
+  <li>容器启动时执行指令</li>
+</ul>
+
+<p>Dockerfile 实例:</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">cat /opt/dockerfille/nginx/Dockerfile
+<span class="c"># This is nginx Dockfile</span>
+<span class="c"># Verion 1.1.1</span>
+<span class="c"># Author Chuck.Ma</span>
+<span class="c"># Date 2016/1/6</span>
+FROM centos
+MAINTAINER robin.wangrubin@gmail.com
+RUN rpm -ivh http://mirrors.aliyun.com/epel/epel-release-latest-7.noarch.rpm
+RUN yum install -y nginx
+RUN <span class="nb">echo</span> <span class="s2">"Robin.Wangrubin"</span> &gt; /usr/share/nginx/html/index.html
+RUN <span class="nb">echo</span> <span class="s2">"daemon off;"</span> &gt;&gt;/etc/nginx/nginx.conf
+EXPOSE 80
+CMD <span class="o">[</span><span class="s2">"nginx"</span><span class="o">]</span></code></pre></figure>
+
+<ul>
+  <li>生成镜像文件</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">docker build -t <span class="nb">test</span>/mynginx:v5 /opt/dockerfille/nginx/</code></pre></figure>
+
+<p>Note：/opt/dockerfille/nginx/下面的Dockerfile文件务必命名为[Dockerfile] ；D大写！</p>
+
+<hr />
+
+<h2 id="namespace">Namespace资源隔离</h2>
+
+<p><img src="/pic/docker-Basic/759122388670221.png" alt="01" /></p>
+
+<ul>
+  <li>pid namespace</li>
+</ul>
+
+<blockquote>
+  <p>不同用户的进程就是通过pid namespace隔离开的，且不同 namespace 中可以有相同pid。所有的LXC进程在docker中的父进程为docker进程，每个lxc进程具有不同的namespace。同时由于允许嵌套，因此可以很方便的实现 Docker in Docker。</p>
+</blockquote>
+
+<ul>
+  <li>net namespace</li>
+</ul>
+
+<blockquote>
+  <p>有了 pid namespace, 每个namespace中的pid能够相互隔离，但是网络端口还是共享host的端口。网络隔离是通过net namespace实现的， 每个net namespace有独立的 network devices, IP addresses, IP routing tables, /proc/net 目录。这样每个container的网络就能隔离开来。docker默认采用veth的方式将container中的虚拟网卡同host上的一个docker bridge: docker0连接在一起。</p>
+</blockquote>
+
+<ul>
+  <li>ipc namespace</li>
+</ul>
+
+<blockquote>
+  <p>container中进程交互还是采用linux常见的进程间交互方法(interprocess communication – IPC), 包括常见的信号量、消息队列和共享内存。然而同 VM 不同的是，container 的进程间交互实际上还是host上具有相同pid namespace中的进程间交互，因此需要在IPC资源申请时加入namespace信息 – 每个IPC资源有一个唯一的32位ID。</p>
+</blockquote>
+
+<ul>
+  <li>mnt namespace</li>
+</ul>
+
+<blockquote>
+  <p>类似chroot，将一个进程放到一个特定的目录执行。mnt namespace允许不同namespace的进程看到的文件结构不同，这样每个 namespace 中的进程所看到的文件目录就被隔离开了。同chroot不同，每个namespace中的container在/proc/mounts的信息只包含所在namespace的mount point。</p>
+</blockquote>
+
+<ul>
+  <li>uts namespace</li>
+</ul>
+
+<blockquote>
+  <p>UTS(“UNIX Time-sharing System”) namespace允许每个container拥有独立的hostname和domain name, 使其在网络上可以被视作一个独立的节点而非Host上的一个进程。</p>
+</blockquote>
+
+<ul>
+  <li>user namespace</li>
+</ul>
+
+<blockquote>
+  <p>每个container可以有不同的 user 和 group id, 也就是说可以在container内部用container内部的用户执行程序而非Host上的用户。</p>
+</blockquote>
+
+<p>ps：我是没看懂</p>
+
+<hr />
+
+<h2 id="control-groups-cgroups">Control Groups (cgroups)</h2>
+
+<p>cgroups 实现了对资源的配额和度量。 cgroups 的使用非常简单，提供类似文件的接口，在 /cgroup目录下新建一个文件夹即可新建一个group，在此文件夹中新建task文件，并将pid写入该文件，即可实现对该进程的资源控制。groups可以限制blkio、cpu、cpuacct、cpuset、devices、freezer、memory、net_cls、ns九大子系统的资源，以下是每个子系统的详细说明（可以使用docker run –help查看）：</p>
+
+<ul>
+  <li>blkio 这个子系统设置限制每个块设备的输入输出控制。例如:磁盘，光盘以及usb等等。</li>
+  <li>cpu 这个子系统使用调度程序为cgroup任务提供cpu的访问。</li>
+  <li>cpuacct 产生cgroup任务的cpu资源报告。</li>
+  <li>cpuset 如果是多核心的cpu，这个子系统会为cgroup任务分配单独的cpu和内存。</li>
+  <li>devices 允许或拒绝cgroup任务对设备的访问。</li>
+  <li>freezer 暂停和恢复cgroup任务。</li>
+  <li>memory 设置每个cgroup的内存限制以及产生内存资源报告。</li>
+  <li>net_cls 标记每个网络包以供cgroup方便使用。</li>
+  <li>ns 名称空间子系统。</li>
+</ul>
+
+<hr />
+
+<h2 id="docker-registry">Docker-Registry</h2>
+
+<p>Registry是docker的镜像仓库；主要用于存储企业内部私有的镜像文件，解决了镜像的安全性和高速拉取镜像问题。</p>
+
+<h3 id="http-registry">HTTP-registry</h3>
+
+<ul>
+  <li>下载registry镜像</li>
+</ul>
+
+<blockquote>
+  <p>docker pull registry:2</p>
+</blockquote>
+
+<ul>
+  <li>启动registry容器</li>
+</ul>
+
+<blockquote>
+  <p>docker run -d -p 5000:5000 –restart=always –name registry -v /docker-registry/data:/var/lib/registry registry:2</p>
+</blockquote>
+
+<ul>
+  <li>retag镜像</li>
+</ul>
+
+<blockquote>
+  <p>docker tag nginx 192.168.1.130:5000/nginx:v2</p>
+</blockquote>
+
+<ul>
+  <li>push镜像</li>
+</ul>
+
+<blockquote>
+  <p>docker push 192.168.1.130:5000/nginx:v2</p>
+</blockquote>
+
+<p><code class="highlighter-rouge">The push refers to a repository [192.168.1.130:5000/nginx]</code>
+<code class="highlighter-rouge">Get https://192.168.1.130:5000/v1/_ping: http: server gave HTTP response to HTTPS client</code></p>
+
+<p>PS:目前registry默认需要以HTTPS方式访问；如果强制用HTTP访问，需要修改配置文件</p>
+
+<p><code class="highlighter-rouge">https://docs.docker.com/engine/admin/systemd/</code></p>
+
+<blockquote>
+  <p>mkdir /etc/systemd/system/docker.service.d</p>
+</blockquote>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>cat &gt;/etc/systemd/system/docker.service.d/docker-config.conf&lt;&lt;EOF
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd --insecure-registry=192.168.1.130:5000
+EOF
+</code></pre>
+</div>
+
+<blockquote>
+  <p>systemctl daemon-reload</p>
+</blockquote>
+
+<blockquote>
+  <p>systemctl restart docker</p>
+</blockquote>
+
+<h3 id="https-registry">HTTPS-registry</h3>
+
+<p>待解决</p>
+
+<hr />
+
+<h2 id="docker-compose">Docker-compose</h2>
+<p>docker-compose是一款应用控制工具，主要是针对application的；Dockerfile可以理解为镜像的描述文件，那么docker-compose的yaml文件可以理解为应用的描述文件。</p>
+
+<p>假如：你有一个应用，需要一个lnmp环境，正常情况下你需要手动启动4个容器（linux-OS nginx mysql php），而且需要关联容器彼此之间的关系，以及需要考虑容器先后启动的顺序等；</p>
+
+<p>但是有了docker-compose，你只需把该应用需要的环境信息写进一个文件即可，用一条命令即可启动整个应用；无需考虑容器之间的联系和启动顺序。</p>
+
+<p>使用docker-compose一般有3个步骤</p>
+
+<ol>
+  <li>定义应用需要的镜像的Dockerfile</li>
+  <li>定义应用需要的服务（容器）</li>
+  <li>docker-compose up 启动应用</li>
+</ol>
+
+<p>docker-compose.yml文件看起来像下面这样</p>
+
+<ul>
+  <li>dockercoins应用</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>version: "2"
+services:
+  rng:
+    build: rng
+    ports:
+    - "8001:80"
+
+  hasher:
+    build: hasher
+    ports:
+    - "8002:80"
+
+  webui:
+    build: webui
+    ports:
+    - "8000:80"
+    volumes:
+    - "./webui/files/:/files/"
+
+  redis:
+    image: redis
+
+  worker:
+    build: worker
+</code></pre>
+</div>
+
+<ul>
+  <li>ELK应用</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>version: "2"
+
+services:
+  elasticsearch:
+    image: elasticsearch
+    # If you need to access ES directly, just uncomment those lines.
+    #ports:
+    #  - "9200:9200"
+    #  - "9300:9300"
+
+  logstash:
+    image: logstash
+    command: |
+      -e '
+      input {
+        # Default port is 12201/udp
+        gelf { }
+        # This generates one test event per minute.
+        # It is great for debugging, but you might
+        # want to remove it in production.
+        heartbeat { }
+      }
+      # The following filter is a hack!
+      # The "de_dot" filter would be better, but it
+      # is not pre-installed with logstash by default.
+      filter {
+        ruby {
+          code =&gt; "
+            event.to_hash.keys.each { |k| event[ k.gsub('"'.'"','"'_'"') ] = event.remove(k) if k.include?'"'.'"' }
+          "
+        }
+      }
+      output {
+        elasticsearch {
+          hosts =&gt; ["elasticsearch:9200"]
+        }
+        # This will output every message on stdout.
+        # It is great when testing your setup, but in
+        # production, it will probably cause problems;
+        # either by filling up your disks, or worse,
+        # by creating logging loops! BEWARE!
+        stdout {
+          codec =&gt; rubydebug
+        }
+      }'
+    ports:
+      - "12201:12201/udp"
+
+  kibana:
+    image: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+</code></pre>
+</div>
+
+<p>Compose has commands for managing the whole lifecycle of your application:</p>
+
+<hr />
+
+<ul>
+  <li>Start, stop and rebuild services</li>
+  <li>View the status of running services</li>
+  <li>Stream the log output of running services</li>
+  <li>Run a one-off command on a service</li>
+</ul>
+
+<h3 id="install-docker-compose">Install docker-compose</h3>
+
+<blockquote>
+  <p>curl -L “https://github.com/docker/compose/releases/download/1.9.0/docker-compose-$(uname -s)-$(uname -m)” -o /usr/local/bin/docker-compose</p>
+</blockquote>
+
+<blockquote>
+  <p>chmod +x /usr/local/bin/docker-compose</p>
+</blockquote>
+
+<blockquote>
+  <p>curl -L https://raw.githubusercontent.com/docker/compose/$(docker-compose version –short)/contrib/completion/bash/docker-compose -o /etc/bash_completion.d/docker-compose</p>
+</blockquote>
+
+<blockquote>
+  <p>docker-compose –version</p>
+</blockquote>
+
+<hr />
+
+<h3 id="get-started-with-docker-compose">Get started with Docker Compose</h3>
+
+<p>下面我们利用docker-compose启动一个简单的python web程序</p>
+
+<blockquote>
+  <p>Step 1: Setup</p>
+</blockquote>
+
+<p>1.Create a directory for the project:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>mkdir composetest
+cd composetest
+</code></pre>
+</div>
+<p>2.Create a file called <code class="highlighter-rouge">app.py</code> in your project directory and paste this in:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>from flask import Flask
+from redis import Redis
+
+app = Flask(__name__)
+redis = Redis(host='redis', port=6379)
+
+@app.route('/')
+def hello():
+    count = redis.incr('hits')
+    return 'Hello World! I have been seen {} times.\n'.format(count)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", debug=True)
+</code></pre>
+</div>
+
+<p>3.Create another file called <code class="highlighter-rouge">requirements.txt</code> in your project directory and paste this in:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>flask
+redis
+</code></pre>
+</div>
+<p>These define the application’s dependencies.</p>
+
+<blockquote>
+  <p>Step 2: Create a Dockerfile</p>
+</blockquote>
+
+<p>In this step, you write a Dockerfile that builds a Docker image. The image contains all the dependencies the Python application requires, including Python itself.</p>
+
+<p>In your project directory, create a file named <code class="highlighter-rouge">Dockerfile</code> and paste the following:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>FROM python:3.4-alpine
+ADD . /code
+WORKDIR /code
+RUN pip install -r requirements.txt
+CMD ["python", "app.py"]
+</code></pre>
+</div>
+
+<p>This tells Docker to:</p>
+
+<ul>
+  <li>Build an image starting with the Python 3.4 image.</li>
+  <li>Add the current directory <code class="highlighter-rouge">.</code> into the path <code class="highlighter-rouge">/code</code> in the image.</li>
+  <li>Set the working directory to <code class="highlighter-rouge">/code</code>.</li>
+  <li>Install the Python dependencies.</li>
+  <li>Set the default command for the container to <code class="highlighter-rouge">python app.py</code></li>
+</ul>
+
+<blockquote>
+  <p>Step 3: Define services in a Compose file</p>
+</blockquote>
+
+<p>Create a file called docker-compose.yml in your project directory and paste the following:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>version: '2'
+services:
+  web:
+    build: .
+    ports:
+     - "5000:5000"
+    volumes:
+     - .:/code
+  redis:
+    image: "redis:alpine"
+</code></pre>
+</div>
+
+<p>This Compose file defines two services, <code class="highlighter-rouge">web</code> and <code class="highlighter-rouge">redis</code>. The web service:</p>
+
+<ul>
+  <li>Uses an image that’s built from the <code class="highlighter-rouge">Dockerfile</code> in the current directory.</li>
+  <li>Forwards the exposed port 5000 on the container to port 5000 on the host machine.</li>
+  <li>Mounts the project directory on the host to <code class="highlighter-rouge">/code</code> inside the container, allowing you to modify the code without having to rebuild the image.</li>
+</ul>
+
+<p>The redis service uses a public <code class="highlighter-rouge">Redis</code> image pulled from the Docker Hub registry.</p>
+
+<blockquote>
+  <p>Step 4: Build and run your app with Compose</p>
+</blockquote>
+
+<p>1.From your project directory, start up your application.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>docker-compose up
+</code></pre>
+</div>
+
+<p>Compose pulls a Redis image, builds an image for your code, and start the services you defined.</p>
+
+<p>2.Enter <code class="highlighter-rouge">http://0.0.0.0:5000/</code> in a browser to see the application running.</p>
+
+<p>If you’re using Docker on Linux natively, then the web app should now be listening on port 5000 on your Docker daemon host. If <code class="highlighter-rouge">http://0.0.0.0:5000</code> doesn’t resolve, you can also try <code class="highlighter-rouge">http://localhost:5000</code>.</p>
+
+<p>If you’re using Docker Machine on a Mac, use docker-machine ip MACHINE_VM to get the IP address of your Docker host. Then, open <code class="highlighter-rouge">http://MACHINE_VM_IP:5000</code> in a browser.</p>
+
+<p>You should see a message in your browser saying:</p>
+
+<p><code class="highlighter-rouge">Hello World! I have been seen 1 times.</code></p>
+
+<p>3.Refresh the page.
+The number should increment.</p>
+
+<blockquote>
+  <p>Step 5: Update the application</p>
+</blockquote>
+
+<p>Because the application code is mounted into the container using a volume, you can make changes to its code and see the changes instantly, without having to rebuild the image.</p>
+
+<p>1.Change the greeting in <code class="highlighter-rouge">app.py</code> and save it. For example:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>return 'Hello from Docker! I have been seen {} times.\n'.format(count)
+</code></pre>
+</div>
+
+<p>2.Refresh the app in your browser. The greeting should be updated, and the counter should still be incrementing.</p>
+
+<blockquote>
+  <p>Step 6: Experiment with some other commands</p>
+</blockquote>
+
+<p>If you want to run your services in the background, you can pass the <code class="highlighter-rouge">-d</code> flag (for “detached” mode) to <code class="highlighter-rouge">docker-compose up</code> and use <code class="highlighter-rouge">docker-compose ps</code> to see what is currently running:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>docker-compose up -d
+</code></pre>
+</div>
+
+<p>The <code class="highlighter-rouge">docker-compose run</code> command allows you to run one-off commands for your services. For example, to see what environment variables are available to the web service:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>docker-compose run web env
+</code></pre>
+</div>
+
+<p>See <code class="highlighter-rouge">docker-compose --help</code> to see other available commands. You can also install <code class="highlighter-rouge">command completion</code> for the bash and zsh shell, which will also show you available commands.</p>
+
+<p>If you started Compose with <code class="highlighter-rouge">docker-compose up -d</code>, you’ll probably want to stop your services once you’ve finished with them:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>docker-compose stop
+</code></pre>
+</div>
+
+<p>You can bring everything down, removing the containers entirely, with the <code class="highlighter-rouge">down</code> command. Pass <code class="highlighter-rouge">--volumes</code> to also remove the data volume used by the Redis container:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>docker-compose down --volumes
+</code></pre>
+</div>
+<p>At this point, you have seen the basics of how Compose works.</p>
+
+<hr />
+
+<p>end</p>
+
+<hr />
+<p>关于 Dockerfile 和 docker-compose 后面会有单独的章节讲解常用的命令参数以及更过示例~</p>
+
+      </article>
+      <hr>
+        <script>
+            window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    </div>
+	    
+  </div>
+  
+  <div id="content" class="col-sm-3">
+    <!-- <div id="myAffix" class="shadow-bottom-center hidden-xs" data-spy="affix" data-offset-top="0" data-offset-bottom="-20"> -->
+    <div id="myAffix" class="shadow-bottom-center hidden-xs" >
+      <div class="categories-list-header">
+        Content
+      </div>
+      <div class="content-text"></div>
+    </div>
+  </div>
+  
+</div>
+
+    </div>
+
+    
+    <div id="top" data-toggle="tooltip" data-placement="left" title="back to top">
+      <a href="javascript:;">
+        <div class="arrow"></div>
+        <div class="stick"></div>
+      </a>
+    </div>
+
+    <footer class="">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <a href="mailto:robin.wangrubin@gmail.com"><span class="glyphicon glyphicon-envelope"></span> robin.wangrubin@gmail.com</a>
+        <span>|</span>
+        <span>Copyright&copy; 2016 WangRuBin</span>
+        <span>|</span>
+        <span>Powered By Jekyll · Theme By Gaohaoyang</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  
+  </body>
+</html>
