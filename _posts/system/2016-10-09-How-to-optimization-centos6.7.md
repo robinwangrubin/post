@@ -59,7 +59,7 @@ chkconfig --list|grep 3:on|egrep -v "crond|network|rsyslog|sshd|sysstat"|awk '{p
 * 关闭SElinux
 
 {% highlight shell %}
-sed -i 's#SELINUX=enforcing#SELINUX=disabled#g' /etc/selinux/config
+sed -i 's/SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config 
 {% endhighlight %}
 
 * 开机自动清空网卡缓存信息
