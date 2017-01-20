@@ -26,7 +26,7 @@ Shipyard完全100%利用的`Docker Remote API`实现的
 
 ### Automated Deployment
 
-> curl -sSL https://shipyard-project.com/deploy | bash -s
+> curl -sSL https://shipyard-project.com/deploy \| bash -s
 
 ### Manual Deployment
 
