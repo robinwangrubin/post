@@ -1,0 +1,82 @@
+{
+    "id": "/_DEPLOY_GROUP/nginx-J_NAME_VERSION",
+    "cmd": null,
+    "env": {
+        "_NGINX_DOMAIN": "J_NGINX_DOMAIN",
+        "_RESOLVER": "J_RESOLVER",
+        "_VERSION": "J_VERSION",
+        "_PROTOCOL": "J_PROTOCOL",
+        "_DEPLOY": "_DEPLOY_GROUP",
+        "_PORT_MATRIX_BASE": "J_PORT_MATRIX_BASE",
+        "_PORT_LIGHTHOUSE_BASE": "J_PORT_LIGHTHOUSE_BASE",
+        "_PORT_TEQUILA_BASE": "J_PORT_TEQUILA_BASE",
+        "_PORT_VODKA_BASE": "J_PORT_VODKA_BASE",
+        "_PORT_MERLOT_BASE": "J_PORT_MERLOT_BASE",
+        "_INSTANCE_MATRIX": "J_INSTANCE_MATRIX",
+        "_INSTANCE_LIGHTHOUSE": "J_INSTANCE_LIGHTHOUSE",
+        "_INSTANCE_TEQUILA": "J_INSTANCE_TEQUILA",
+        "_INSTANCE_VODKA": "J_INSTANCE_VODKA",
+        "_INSTANCE_MERLOT": "J_INSTANCE_MERLOT"
+    },
+    "instances": 1,
+    "cpus": _CPUS_NGINX,
+    "mem": _MEM_NGINX,
+    "disk": 0,
+    "constraints": [
+        [
+            "hostname",
+            "CLUSTER",
+            "_CONSTRAINTS_HOST_NGINX"
+        ]
+    ],
+    "container": {
+        "type": "DOCKER",
+        "volumes": [
+            
+        ],
+        "docker": {
+            "image": "_IMAGE_NGINX",
+            "network": "BRIDGE",
+            "portMappings": [
+                {
+                    "containerPort": 80,
+                    "hostPort": 80,
+                    "protocol": "tcp",
+                    "labels": {
+                        
+                    }
+                },
+                {
+                    "containerPort": 443,
+                    "hostPort": 443,
+                    "protocol": "tcp",
+                    "labels": {
+                        
+                    }
+                }
+            ],
+            "parameters": [
+                {
+                    "key": "log-driver",
+                    "value": "fluentd"
+                },
+                {
+                    "key": "log-opt",
+                    "value": "fluentd-address=fluentd.log.xxxxxx.marathon.mesos:24224"
+                },
+                {
+                    "key": "log-opt",
+                    "value": "tag=nginx.J_VERSION"
+                },
+                {
+                    "key": "log-opt",
+                    "value": "fluentd-async-connect=true"
+                }
+            ],
+            "forcePullImage": false
+        }
+    },
+    "dependencies": [
+        
+    ]
+}
